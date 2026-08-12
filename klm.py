@@ -1,9 +1,9 @@
 version = 0.3
 
 import importlib
+from kcli import K_CLI
 
-
-needed_pkgs = ['time','random' ,'shutil' ,'os' ,'yt_dlp' , 'qrcode', 'shutil','requests' , 'subprocess', 'datetime', 'functools', 'urllib' ]
+needed_pkgs = ['time','random' ,'shutil' ,'os' ,'yt_dlp' , 'qrcode', 'shutil','requests' , 'datetime', 'functools', 'urllib' , 'subprocess']
 not_installed_pkgs =[]
 
 for id,pkg in enumerate(needed_pkgs):
@@ -15,7 +15,7 @@ for id,pkg in enumerate(needed_pkgs):
         
 from functools import lru_cache
 
-@lru_cache
+
 def asc_bw():
     binary = input("Enter binary:> ").split()
 
@@ -25,7 +25,7 @@ def asc_bw():
 
     return "KLM: The converted text is--> ", text
     
-@lru_cache
+
 def asc_wb():
     text = input("Enter text:> ")
 
@@ -35,7 +35,7 @@ def asc_wb():
 
     return "KLM: The binary form of this text is--> ", binary
 
-def install_needed_pkgs(needed_list):
+async def sub_install_pkgs(needed_list):
     l = subprocess.check_output(["python","-m","pip","list"],text=True)
     
     needed_pkgs = str(needed_list)
@@ -46,15 +46,20 @@ def install_needed_pkgs(needed_list):
         inputt = input('> ')
         while True:
             if inputt == "y":
-                for pkg in not_installed_pkgs:
-                    subprocess.run(["pip3","install",f"{pkg}"])
+                try:
+                    for pkg in not_installed_pkgs:
+                        subprocess.run(["pip3","install",f"{pkg}"])
                     slow(f"KLM: Sucessfully Installed {pkg}!")
+                except Exception as e:
+                    slow(f"KLM: Coudn't install the packages for some reason.\n{e}")
+                    break
                 break
             elif inputt == "n":
                 slow(f"KLM: These packages are not going to be installed {not_installed_pkgs}")
                 break
             else:
                 slow("KLM: The input is invalid!\nKLM: Please input y for yes and n for no")
+            break
             
     
 
@@ -90,7 +95,7 @@ def slow(t):
         time.sleep(0.03)
     print()
 
-commands = {'/date':datec() , '/toss':toss(),'/time':timet(),}
+commands = {'/date':datec , '/toss':toss,'/time':timet,'/w_t_b':asc_wb,'/b_t_w':asc_bw,'/cli':K_CLI}
 
 print('''
 ██╗  ██╗██╗      ███╗   ███╗
@@ -107,7 +112,8 @@ slow(f"\nKLM: Hi! i am an ai assistant KLM {version} made by Kash.")
 
 os.makedirs("mem", exist_ok=True)
 
-l = os.listdir(f"mem")
+l = subprocess.check_output(["ls","mem"],text=True)
+print(l)
 
 if "api_key.txt" in l:
     f = open("mem/api_key.txt","r")
@@ -116,7 +122,14 @@ if "api_key.txt" in l:
 if "api_key.txt" not in l:
     f = open("mem/api_key.txt","w")
     AI_API_KEY = input("Enter your pollinations api key: ")
+    f.write(AI_API_KEY)
     f.close()
+if "ai_model.txt" in l:
+    with open("mem/ai_model.txt" , 'r') as f:
+        AI_MODEL = f.read()
+if "ai_model.txt" not in l:
+    with open("mem/ai_model.txt" , 'w') as f:
+        f.write(input("Enter the model you are going to use with the api key: "))
 
 if "user_name.txt" in l and "api_key.txt" in l:
      f = open(f'mem/user_name.txt' , 'r')
@@ -135,21 +148,18 @@ if "user_name.txt" in l and "api_key.txt" in l:
      while True:
          ip = input("> ").lower()
          if ip == "help":
-             print("type /date for getting date.\n/toss for a coin toss\n/sum for sum \n/clear_data for clearing ai data\n/time for time\n/calculate_death to calculate a fake death counter\n/w_t_b for word to binary conversion\n/b_t_w for binary to word or ASCII conversion\n/ytd for downloading videos from YouTube\n/gen_qr for generating a qr code from the given url \n/install_deps to install all dependencies\nMore coming soon in next update...")
+             print("type /date for getting date.\n/toss for a coin toss\n/sum for sum \n/clear_data for clearing ai data\n/time for time\n/calculate_death to calculate a fake death counter\n/w_t_b for word to binary conversion\n/b_t_w for binary to word or ASCII conversion\n/ytd for downloading videos from YouTube\n/gen_qr for generating a qr code from the given url \n/install_deps to install all dependencies\n/cli for a command line interface named k-cli\nMore coming soon in next update...")
          elif ip == "/clear_data":
              
              shutil.rmtree("mem")
              print("Program finished.")
              break
          elif ip in commands:
-             slow(commands[ip])
-         elif ip == "/w_t_b":
-             slow(asc_wb())
-         elif ip == "/install_deps":
-             install_needed_pkgs(needed_pkgs)
+             slow(commands[ip]())
              
-         elif ip == "/b_t_w":
-             slow(asc_bw())
+         elif ip == "/install_deps":
+             install_pkgs(needed_pkgs)
+           
          elif ip == "/gen_qr":
              
              url = input("Enter url: ").strip()
@@ -170,7 +180,7 @@ if "user_name.txt" in l and "api_key.txt" in l:
              slow("KLM: Byee 👋!")
              break
          elif ip == "What is your name" or ip == "what is your name" or ip == "What is your name?" or ip == "who are you?" or ip == "who are you" or ip == "what is your name?":
-             slow("KLM: My name is KLM. 'KLM' stands for Kash's Artificial Intelligence.")
+             slow("KLM: My name is KLM. 'KLM' stands for Kash's Language Model.")
          
          elif ip == "hi" or ip == "Hi" or ip == "hi!" or ip == "Hi!":
                  hiran = random.randint(1,5)
@@ -209,6 +219,7 @@ if "user_name.txt" in l and "api_key.txt" in l:
          elif ip == "lets play some games" or ip == "games" or ip == "play games" or ip == "lets play" or ip == "play" or ip == "lets play games" or ip == "lets games":
              slow("KLM: Sounds exellent! what kinds of games do you want to play? I know how to play rock paper scissor!\nKLM: rock , paper , scissor .... shoot!(Ten rounds)")
              from stone import rcp
+             
              rocpapsci = 0
              klmrcpscore = 0
              userrcpscore = 0
@@ -223,19 +234,24 @@ if "user_name.txt" in l and "api_key.txt" in l:
                  if rockpaperscip == "lose":
                      klmrcpscore += 1
                  print(f"score is {klmrcpscore}:{userrcpscore}")
-                 print("Match ended.")
+             print("Match ended.")
          else:
                  
                  from urllib.parse import quote as qte
                  try:
                      prom = ip
                      prompt = qte(prom)
-                     ai = requests.get(f"https://gen.pollinations.ai/text/{prompt}?key={AI_API_KEY}")
+                     
+                     ai = requests.get(f"https://gen.pollinations.ai/text/{prompt}?key={AI_API_KEY}&model={AI_MODEL}")
                      print(f"KLM: {ai.text}")
-                 except rq.exceptions.ConnectionError:
-                     slow("KLM: Connection to the api failed! Check your internet connection!")
-                 except:
-                     slow("KLM: opps! I think some error occurred!")
+                     with open('mem/memory.txt','w') as f:
+                         if type(ai.text) == type({}):
+                             pass
+                         else:
+                             f.write(ai.text)
+                 
+                 except Exception as e:
+                     slow(f"KLM: oops! Some error occurred!-->\n\n{e}")
              
 else:
     slow("KLM: What is your name?")

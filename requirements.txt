@@ -1,0 +1,1 @@
+You can find all the additional requrements needed in klm.py by typing /install_deps in the chat.
