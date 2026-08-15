@@ -35,7 +35,7 @@ def asc_wb():
 
     return "KLM: The binary form of this text is--> ", binary
 
-async def sub_install_pkgs(needed_list):
+def sub_install_pkgs(needed_list):
     l = subprocess.check_output(["python","-m","pip","list"],text=True)
     
     needed_pkgs = str(needed_list)
@@ -113,11 +113,11 @@ slow(f"\nKLM: Hi! i am an ai assistant KLM {version} made by Kash.")
 os.makedirs("mem", exist_ok=True)
 
 l = subprocess.check_output(["ls","mem"],text=True)
-print(l)
+
 
 if "api_key.txt" in l:
     f = open("mem/api_key.txt","r")
-    AI_API_KEY = f.read()
+    AI_API_KEY = f.read().strip()
     f.close()
 if "api_key.txt" not in l:
     f = open("mem/api_key.txt","w")
@@ -126,7 +126,7 @@ if "api_key.txt" not in l:
     f.close()
 if "ai_model.txt" in l:
     with open("mem/ai_model.txt" , 'r') as f:
-        AI_MODEL = f.read()
+        AI_MODEL = f.read().strip()
 if "ai_model.txt" not in l:
     with open("mem/ai_model.txt" , 'w') as f:
         f.write(input("Enter the model you are going to use with the api key: "))
@@ -158,7 +158,7 @@ if "user_name.txt" in l and "api_key.txt" in l:
              slow(commands[ip]())
              
          elif ip == "/install_deps":
-             install_pkgs(needed_pkgs)
+             sub_install_pkgs(needed_pkgs)
            
          elif ip == "/gen_qr":
              
@@ -241,17 +241,21 @@ if "user_name.txt" in l and "api_key.txt" in l:
                  try:
                      prom = ip
                      prompt = qte(prom)
-                     
-                     ai = requests.get(f"https://gen.pollinations.ai/text/{prompt}?key={AI_API_KEY}&model={AI_MODEL}")
-                     print(f"KLM: {ai.text}")
-                     with open('mem/memory.txt','w') as f:
-                         if type(ai.text) == type({}):
-                             pass
-                         else:
-                             f.write(ai.text)
-                 
+                     headers = {
+    "Authorization": f"Bearer {AI_API_KEY}"
+}
+                     ai = requests.get(f"https://gen.pollinations.ai/text/{prompt}?model={AI_MODEL}&json=false", headers=headers)
+                     if ai.status_code == 200:
+                         print(f"KLM: {ai.text}")
+                         with open('mem/memory.txt','w') as f:
+                             if type(ai.text) == type({}):
+                                 pass
+                             else:
+                                 f.write(ai.text)
+                     else:
+                         slow(f"KLM(ERROR): {ai.status_code} | {ai.text}")
                  except Exception as e:
-                     slow(f"KLM: oops! Some error occurred!-->\n\n{e}")
+                     slow(f"KLM: oops! Some error occurred!-->\n{e}\n")
              
 else:
     slow("KLM: What is your name?")
